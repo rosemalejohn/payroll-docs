@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payroll App — Flow</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #080c14; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; min-height: 100vh; }
+
+  nav { position: sticky; top: 0; z-index: 100; height: 52px; background: rgba(8,12,20,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid #1a2235; display: flex; align-items: center; padding: 0 24px; gap: 12px; }
+  .nav-brand { font-size: 13px; font-weight: 600; color: #94a3b8; letter-spacing: 0.05em; }
+  .badge-app { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+  .nav-title { color: #e2e8f0; font-weight: 600; font-size: 14px; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 28px; flex-wrap: wrap; }
+  .tab { padding: 7px 16px; border-radius: 8px; border: none; background: transparent; color: #64748b; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .tab:hover { color: #94a3b8; background: rgba(26,34,53,0.5); }
+  .tab.active { background: #1a2235; color: #e2e8f0; }
+
+  .card { background: #0d1525; border: 1px solid #1a2235; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 15px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+  .card-sub { font-size: 13px; color: #64748b; margin-bottom: 20px; }
+  h3 { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead tr { background: #111827; }
+  th { padding: 10px 14px; text-align: left; color: #64748b; font-weight: 600; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+  td { padding: 10px 14px; border-top: 1px solid #1a2235; color: #cbd5e1; }
+  tr:hover td { background: rgba(26,34,53,0.4); }
+
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); }
+  .badge-blue { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+  .badge-yellow { background: rgba(234,179,8,0.12); color: #facc15; border: 1px solid rgba(234,179,8,0.2); }
+  .badge-red { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
+  .badge-purple { background: rgba(99,102,241,0.12); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
+  .badge-orange { background: rgba(249,115,22,0.12); color: #fb923c; border: 1px solid rgba(249,115,22,0.2); }
+  .badge-gray { background: rgba(100,116,139,0.12); color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
+
+  /* Run state machine */
+  .run-flow { display: flex; align-items: center; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+  .rstate { display: flex; flex-direction: column; align-items: center; }
+  .rstate-box { padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid; text-align: center; white-space: nowrap; }
+  .rstate-actor { font-size: 11px; color: #475569; margin-top: 5px; text-align: center; }
+  .rarrow { color: #475569; font-size: 20px; margin: 0 8px; align-self: flex-start; margin-top: 14px; }
+  .s-draft .rstate-box { background: rgba(100,116,139,0.1); color: #94a3b8; border-color: rgba(100,116,139,0.25); }
+  .s-submitted .rstate-box { background: rgba(59,130,246,0.1); color: #60a5fa; border-color: rgba(59,130,246,0.25); }
+  .s-review .rstate-box { background: rgba(234,179,8,0.1); color: #facc15; border-color: rgba(234,179,8,0.25); }
+  .s-finalized .rstate-box { background: rgba(34,197,94,0.1); color: #22c55e; border-color: rgba(34,197,94,0.25); }
+
+  .steps { display: flex; flex-direction: column; gap: 14px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(99,102,241,0.15); color: #818cf8; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(99,102,241,0.25); }
+  .step-num-ext { background: rgba(249,115,22,0.15); color: #fb923c; border-color: rgba(249,115,22,0.25); }
+  .step-content { padding-top: 4px; }
+  .step-content strong { color: #e2e8f0; font-size: 13px; }
+  .step-content p { color: #64748b; font-size: 12px; margin-top: 2px; }
+
+  .info-box { background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.15); border-radius: 8px; padding: 14px 16px; margin-top: 14px; font-size: 13px; color: #64748b; }
+  .info-box strong { color: #818cf8; }
+  .warn-box { background: rgba(234,179,8,0.05); border: 1px solid rgba(234,179,8,0.15); border-radius: 8px; padding: 14px 16px; margin-top: 14px; font-size: 13px; color: #64748b; }
+  .warn-box strong { color: #facc15; }
+  .green-box { background: rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.15); border-radius: 8px; padding: 14px 16px; margin-top: 14px; font-size: 13px; color: #64748b; }
+  .green-box strong { color: #22c55e; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .divider { height: 1px; background: #1a2235; margin: 20px 0; }
+
+  /* Calendar */
+  .cal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  .cal-month { border: 1px solid #1a2235; border-radius: 8px; padding: 10px; text-align: center; font-size: 12px; color: #64748b; }
+  .cal-month.highlight-dec { border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.08); color: #818cf8; font-weight: 700; }
+  .cal-month.highlight-jun { border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.08); color: #fb923c; font-weight: 700; }
+  .cal-month .icon { font-size: 16px; display: block; margin-bottom: 3px; }
+
+  /* Modal mockup */
+  .modal-mock { background: #060a12; border: 1px solid #1a2235; border-radius: 12px; padding: 20px; max-width: 380px; }
+  .modal-header { font-size: 14px; font-weight: 600; color: #e2e8f0; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #1a2235; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 5px; }
+  .modal-input { background: #0d1525; border: 1px solid #1a2235; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #e2e8f0; width: 100%; }
+  .modal-input.readonly { color: #64748b; }
+  .modal-btn { background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.35); color: #818cf8; font-size: 13px; font-weight: 600; border-radius: 7px; padding: 8px 18px; cursor: default; }
+
+  .env-block { background: #060a12; border: 1px solid #1a2235; border-radius: 8px; padding: 14px 16px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; color: #64748b; margin-top: 8px; }
+  .env-block .key { color: #60a5fa; }
+  .env-block .val { color: #818cf8; }
+  .env-block .comment { color: #334155; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .bonus-card { background: #060a12; border: 1px solid #1a2235; border-radius: 10px; padding: 16px; }
+  .bonus-name { font-size: 13px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+  .bonus-meta { font-size: 12px; color: #64748b; }
+  .bonus-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 640px) { .bonus-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">PayHRIS</span>
+  <span style="color:#1a2235">|</span>
+  <span class="badge-app">PAYROLL App</span>
+  <span class="nav-title">Flow Reference</span>
+</nav>
+
+<div class="container">
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="states">Run States</button>
+    <button class="tab" data-tab="computation">Computation</button>
+    <button class="tab" data-tab="bonus">Bonus Manager</button>
+    <button class="tab" data-tab="currency">Currency</button>
+    <button class="tab" data-tab="roles">Roles</button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="tab-panel active" id="overview">
+    <div class="card">
+      <div class="card-title">Payroll Management App</div>
+      <div class="card-sub">Manages monthly payroll runs, salary computation, bonuses, deductions, and multi-currency support.</div>
+      <div class="grid-2">
+        <div>
+          <h3>Core Functions</h3>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-content"><strong>Payroll Run Lifecycle</strong><p>Runs are created per period, computed, reviewed, and finalized in a structured 4-state pipeline.</p></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-content"><strong>Salary Computation</strong><p>Supports both regular employee (10-step) and external salary (4-step) computation paths.</p></div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-content"><strong>Bonus Manager</strong><p>4 built-in bonus types plus custom bonuses. June and December auto-triggers built in.</p></div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-content"><strong>BIR Tax</strong><p>Philippine BIR withholding tax is applied automatically based on taxable income brackets.</p></div></div>
+          </div>
+        </div>
+        <div>
+          <h3>Connected Systems</h3>
+          <div class="steps">
+            <div class="step"><div class="step-num">↔</div><div class="step-content"><strong>HRIS Core</strong><p>Employee roster, salary rates, and employment type (regular / external) are synced from HRIS.</p></div></div>
+            <div class="step"><div class="step-num">→</div><div class="step-content"><strong>Expenses App</strong><p>Finalized payroll runs feed the Employee Salaries section of monthly expense invoices.</p></div></div>
+          </div>
+          <div class="divider"></div>
+          <h3>Roles</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="badge badge-purple">owner</span>
+            <span class="badge badge-blue">payroll_officer</span>
+            <span class="badge badge-orange">finance</span>
+            <span class="badge badge-gray">employee</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUN STATES -->
+  <div class="tab-panel" id="states">
+    <div class="card">
+      <div class="card-title">Payroll Run State Machine</div>
+      <div class="card-sub">Each payroll period has a single run that progresses through four states.</div>
+
+      <div class="run-flow">
+        <div class="rstate s-draft"><div class="rstate-box">DRAFT</div><div class="rstate-actor">Payroll Officer creates</div></div>
+        <div class="rarrow">→</div>
+        <div class="rstate s-submitted"><div class="rstate-box">SUBMITTED</div><div class="rstate-actor">Officer submits for review</div></div>
+        <div class="rarrow">→</div>
+        <div class="rstate s-review"><div class="rstate-box">UNDER REVIEW</div><div class="rstate-actor">Finance / Owner reviews</div></div>
+        <div class="rarrow">→</div>
+        <div class="rstate s-finalized"><div class="rstate-box">FINALIZED</div><div class="rstate-actor">Owner finalizes</div></div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Actions per State</h3>
+      <table>
+        <thead><tr><th>State</th><th>Who Acts</th><th>Actions Available</th><th>Next State</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-gray">DRAFT</span></td>
+            <td>payroll_officer</td>
+            <td>Add employees, compute salaries, attach bonuses, edit deductions</td>
+            <td><span class="badge badge-blue">SUBMITTED</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-blue">SUBMITTED</span></td>
+            <td>finance, owner</td>
+            <td>Review totals, flag discrepancies, request corrections (returns to DRAFT)</td>
+            <td><span class="badge badge-yellow">UNDER_REVIEW</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-yellow">UNDER_REVIEW</span></td>
+            <td>owner</td>
+            <td>Final review, approve all line items, lock the run</td>
+            <td><span class="badge badge-green">FINALIZED</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-green">FINALIZED</span></td>
+            <td>system</td>
+            <td>Read-only. Feeds Expenses invoice salary section. No edits allowed.</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="green-box"><strong>Finalized → Expenses:</strong> Once a payroll run is finalized, its employee salary data is automatically available in the Expenses app as the "Employee Salaries" section of the current month's invoice.</div>
+    </div>
+  </div>
+
+  <!-- COMPUTATION -->
+  <div class="tab-panel" id="computation">
+    <div class="card">
+      <div class="card-title">Salary Computation</div>
+      <div class="card-sub">Two computation paths depending on employment type.</div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Regular Employee — 10 Steps</h3>
+          <div class="steps">
+            <div class="step"><div class="step-num">1</div><div class="step-content"><strong>Base Salary</strong><p>Monthly rate from HRIS employment record.</p></div></div>
+            <div class="step"><div class="step-num">2</div><div class="step-content"><strong>Add Allowances</strong><p>Fixed allowances attached to the employee's contract.</p></div></div>
+            <div class="step"><div class="step-num">3</div><div class="step-content"><strong>Add Bonuses</strong><p>Active bonuses for the period (attendance, meal, 13th month, etc.).</p></div></div>
+            <div class="step"><div class="step-num">4</div><div class="step-content"><strong>Compute Gross Pay</strong><p>Base + Allowances + Bonuses = Gross Pay.</p></div></div>
+            <div class="step"><div class="step-num">5</div><div class="step-content"><strong>Deduct SSS</strong><p>Mandatory Social Security System contribution.</p></div></div>
+            <div class="step"><div class="step-num">6</div><div class="step-content"><strong>Deduct PhilHealth</strong><p>Mandatory health insurance contribution.</p></div></div>
+            <div class="step"><div class="step-num">7</div><div class="step-content"><strong>Deduct Pag-IBIG</strong><p>Mandatory housing fund contribution.</p></div></div>
+            <div class="step"><div class="step-num">8</div><div class="step-content"><strong>Compute Taxable Income</strong><p>Gross Pay − mandatory deductions = taxable income.</p></div></div>
+            <div class="step"><div class="step-num">9</div><div class="step-content"><strong>Apply BIR Withholding Tax</strong><p>Philippine BIR tax table applied to taxable income bracket.</p></div></div>
+            <div class="step"><div class="step-num">10</div><div class="step-content"><strong>Voluntary Deductions</strong><p>Loans, cash advances, or other employee-agreed deductions subtracted last.</p></div></div>
+          </div>
+        </div>
+        <div>
+          <h3>External Salary — 4 Steps</h3>
+          <div class="steps">
+            <div class="step"><div class="step-num step-num-ext">1</div><div class="step-content"><strong>Fixed Contract Rate</strong><p>Pre-agreed monthly fee from the external contract record.</p></div></div>
+            <div class="step"><div class="step-num step-num-ext">2</div><div class="step-content"><strong>Add Any Bonuses</strong><p>If bonuses are attached to the external record, add them.</p></div></div>
+            <div class="step"><div class="step-num step-num-ext">3</div><div class="step-content"><strong>No Mandatory Deductions</strong><p>External personnel are not subject to SSS/PhilHealth/Pag-IBIG deductions.</p></div></div>
+            <div class="step"><div class="step-num step-num-ext">4</div><div class="step-content"><strong>Net = Gross</strong><p>No withholding tax. Total payout equals contracted rate plus bonuses.</p></div></div>
+          </div>
+
+          <div class="divider"></div>
+          <h3>Deductions Summary</h3>
+          <table>
+            <thead><tr><th>Deduction</th><th>Type</th></tr></thead>
+            <tbody>
+              <tr><td>SSS</td><td><span class="badge badge-red">mandatory</span></td></tr>
+              <tr><td>PhilHealth</td><td><span class="badge badge-red">mandatory</span></td></tr>
+              <tr><td>Pag-IBIG</td><td><span class="badge badge-red">mandatory</span></td></tr>
+              <tr><td>BIR Withholding Tax</td><td><span class="badge badge-red">mandatory</span></td></tr>
+              <tr><td>SSS Loan</td><td><span class="badge badge-blue">voluntary</span></td></tr>
+              <tr><td>Cash Advance</td><td><span class="badge badge-blue">voluntary</span></td></tr>
+              <tr><td>Other Loans</td><td><span class="badge badge-blue">voluntary</span></td></tr>
+            </tbody>
+          </table>
+
+          <div class="warn-box"><strong>BIR Note:</strong> Tax is computed using the TRAIN Law withholding tax table. Monthly taxable income determines the applicable bracket. Zero tax applies below the minimum threshold.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BONUS MANAGER -->
+  <div class="tab-panel" id="bonus">
+    <div class="card">
+      <div class="card-title">Bonus Manager</div>
+      <div class="card-sub">Four built-in bonus types plus support for custom bonuses. June and December runs include auto-triggered bonuses.</div>
+
+      <h3>Built-in Bonus Types</h3>
+      <div class="bonus-grid">
+        <div class="bonus-card">
+          <div class="badge badge-purple" style="margin-bottom:10px;">Meal Allowance</div>
+          <div class="bonus-name">Fixed Amount</div>
+          <div class="bonus-meta">A fixed PHP amount added to every payroll run. Configured once and applies each month automatically.</div>
+        </div>
+        <div class="bonus-card">
+          <div class="badge badge-blue" style="margin-bottom:10px;">Attendance Bonus</div>
+          <div class="bonus-name">Percentage + Threshold</div>
+          <div class="bonus-meta">Applied as a % of base salary when the employee meets the minimum attendance threshold for the period.</div>
+        </div>
+        <div class="bonus-card">
+          <div class="badge badge-green" style="margin-bottom:10px;">13th Month</div>
+          <div class="bonus-name">Auto-trigger — December</div>
+          <div class="bonus-meta">Automatically included in the December payroll run. Computed as 1/12 of total basic salary for the year per labor law.</div>
+        </div>
+        <div class="bonus-card">
+          <div class="badge badge-orange" style="margin-bottom:10px;">June Special</div>
+          <div class="bonus-name">Auto-trigger — June</div>
+          <div class="bonus-meta">Automatically included in the June payroll run as a mid-year incentive bonus. Amount configurable per employee group.</div>
+        </div>
+      </div>
+
+      <div class="info-box"><strong>Custom Bonus:</strong> Any additional one-off or recurring bonus can be created with a name, amount (fixed or % of salary), and target period. Custom bonuses are manually attached to payroll runs by the payroll officer.</div>
+
+      <div class="divider"></div>
+      <h3>Auto-trigger Calendar</h3>
+      <div class="cal-grid">
+        <div class="cal-month"><span class="icon">📅</span>Jan</div>
+        <div class="cal-month"><span class="icon">📅</span>Feb</div>
+        <div class="cal-month"><span class="icon">📅</span>Mar</div>
+        <div class="cal-month"><span class="icon">📅</span>Apr</div>
+        <div class="cal-month"><span class="icon">📅</span>May</div>
+        <div class="cal-month highlight-jun"><span class="icon">⭐</span>Jun<br><small>June Special</small></div>
+        <div class="cal-month"><span class="icon">📅</span>Jul</div>
+        <div class="cal-month"><span class="icon">📅</span>Aug</div>
+        <div class="cal-month"><span class="icon">📅</span>Sep</div>
+        <div class="cal-month"><span class="icon">📅</span>Oct</div>
+        <div class="cal-month"><span class="icon">📅</span>Nov</div>
+        <div class="cal-month highlight-dec"><span class="icon">🎄</span>Dec<br><small>13th Month</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CURRENCY -->
+  <div class="tab-panel" id="currency">
+    <div class="card">
+      <div class="card-title">Currency Management</div>
+      <div class="card-sub">Payroll operates in PHP (Philippine Peso) as the base currency. Manual exchange rates are maintained for reporting and invoice equivalents.</div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Rate Format</h3>
+          <div class="env-block">
+            <div><span class="comment"># All rates expressed as:</span></div>
+            <div><span class="comment"># 1 USD = X PHP</span></div>
+            <div style="margin-top:8px;"><span class="key">USD</span> → <span class="val">1 USD = 56.50 PHP</span></div>
+            <div><span class="key">EUR</span> → <span class="val">1 EUR = 61.20 PHP</span></div>
+            <div><span class="key">SGD</span> → <span class="val">1 SGD = 41.80 PHP</span></div>
+          </div>
+          <div class="divider"></div>
+          <h3>Snapshot Strategy</h3>
+          <div class="info-box"><strong>Rate snapshot on run creation:</strong> When a payroll run is created, the current exchange rates are snapshotted and locked to that run. Rate changes after run creation do not affect in-progress runs. This ensures historical consistency for finalized payroll records.</div>
+        </div>
+        <div>
+          <h3>Edit Rate — Settings Modal</h3>
+          <div class="modal-mock">
+            <div class="modal-header">Edit Exchange Rate</div>
+            <div class="modal-field">
+              <div class="modal-label">Currency</div>
+              <div class="modal-input readonly">USD — United States Dollar</div>
+            </div>
+            <div class="modal-field">
+              <div class="modal-label">Base Currency</div>
+              <div class="modal-input readonly">PHP (Philippine Peso)</div>
+            </div>
+            <div class="modal-field">
+              <div class="modal-label">Rate (1 USD = ? PHP)</div>
+              <div class="modal-input" style="color:#818cf8;">56.50</div>
+            </div>
+            <div class="modal-field">
+              <div class="modal-label">Effective Date</div>
+              <div class="modal-input" style="color:#818cf8;">2026-03-01</div>
+            </div>
+            <button class="modal-btn">Save Rate</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h3>Conversion Formulas</h3>
+      <table>
+        <thead><tr><th>Operation</th><th>Formula</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>PHP → USD</td><td>amount_php ÷ usd_rate</td><td>₱56,500 ÷ 56.50 = $1,000.00</td></tr>
+          <tr><td>PHP → EUR</td><td>amount_php ÷ eur_rate</td><td>₱61,200 ÷ 61.20 = €1,000.00</td></tr>
+          <tr><td>USD → PHP</td><td>amount_usd × usd_rate</td><td>$1,000 × 56.50 = ₱56,500</td></tr>
+          <tr><td>Foreign → PHP</td><td>amount × foreign_rate</td><td>€500 × 61.20 = ₱30,600</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ROLES -->
+  <div class="tab-panel" id="roles">
+    <div class="card">
+      <div class="card-title">Role Permission Matrix</div>
+      <div class="card-sub">Access control for all payroll management actions.</div>
+      <table>
+        <thead>
+          <tr><th>Action</th><th>owner</th><th>payroll_officer</th><th>finance</th><th>employee</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Create payroll run (DRAFT)</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-red">✗</span></td></tr>
+          <tr><td>Edit DRAFT run</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-red">✗</span></td></tr>
+          <tr><td>Submit run for review</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-red">✗</span></td></tr>
+          <tr><td>Review submitted run</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td></tr>
+          <tr><td>Finalize run</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-red">✗</span></td></tr>
+          <tr><td>View all payroll runs</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-gray">own only</span></td></tr>
+          <tr><td>Manage bonus types</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-red">✗</span></td></tr>
+          <tr><td>Edit exchange rates</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td></tr>
+          <tr><td>View own payslip</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-green">✓</span></td></tr>
+          <tr><td>Configure HRIS sync</td><td><span class="badge badge-green">✓</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-red">✗</span></td><td><span class="badge badge-red">✗</span></td></tr>
+        </tbody>
+      </table>
+      <div class="divider"></div>
+      <div class="bonus-grid">
+        <div class="info-box"><strong>owner</strong> — Full control including finalization and system configuration.</div>
+        <div class="info-box"><strong>payroll_officer</strong> — Creates and manages DRAFT runs, attaches bonuses, submits for review.</div>
+        <div class="info-box"><strong>finance</strong> — Reviews submitted runs and manages exchange rates. Cannot create or finalize.</div>
+        <div class="info-box"><strong>employee</strong> — Read-only access to their own payslips and salary history.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.tab-panel');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "recipe-create-presentation": {
+      "source": "googleworkspace/cli",
+      "sourceType": "github",
+      "computedHash": "e896ee18c607a8e153d86cfd4efb0be70d6666b648043691795a8ba2cee8552a"
+    }
+  }
+}

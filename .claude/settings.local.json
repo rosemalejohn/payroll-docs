@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /Users/rosemalejohn/Desktop/payhris-payroll/tickets/PAY-01[5-9].md /Users/rosemalejohn/Desktop/payhris-payroll/tickets/PAY-020.md /Users/rosemalejohn/Desktop/payhris-payroll/tickets/PAY-02[9].md /Users/rosemalejohn/Desktop/payhris-payroll/tickets/PAY-03[0-9].md /Users/rosemalejohn/Desktop/payhris-payroll/tickets/PAY-040.md)",
+      "Bash(ls /Users/rosemalejohn/Desktop/payhris-payroll/tickets/PAY-*.md)"
+    ]
+  }
+}

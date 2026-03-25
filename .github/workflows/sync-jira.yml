@@ -1,0 +1,28 @@
+name: Sync Tickets to Jira
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tickets/**'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Sync tickets to Jira
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}       # e.g. https://yourcompany.atlassian.net
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}               # e.g. you@company.com
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}       # Jira API token
+          JIRA_PROJECT_KEY: ${{ secrets.JIRA_PROJECT_KEY }}   # e.g. PAY (defaults to PAY if not set)
+        run: python scripts/sync_tickets_to_jira.py

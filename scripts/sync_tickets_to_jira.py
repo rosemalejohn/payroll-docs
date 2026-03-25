@@ -11,6 +11,15 @@ Environment variables:
   JIRA_API_TOKEN   - Jira API token (create at https://id.atlassian.com/manage-profile/security/api-tokens)
   JIRA_PROJECT_KEY - Jira project key (e.g. PAY)
   DRY_RUN          - Set to "true" to preview without creating tickets
+
+Field Mapping:
+  The script maps markdown sections to Jira fields as follows:
+  - Description section → Jira "Description" field (standard)
+  - Technical Implementation section → Custom field (if available)
+  - Acceptance Criteria section → Custom field (if available)
+  
+  The script automatically discovers custom fields from your Jira instance.
+  Update the build_issue_payload() function to map custom field IDs if needed.
 """
 
 from __future__ import annotations
@@ -79,6 +88,16 @@ def jira_request(method: str, path: str, data: dict | None = None) -> dict:
         error_body = e.read().decode() if e.fp else ""
         print(f"  ERROR {e.code}: {error_body}", file=sys.stderr)
         raise
+
+
+def get_custom_fields() -> dict[str, str]:
+    """Fetch all custom fields in the Jira instance, return {field_name: field_id} map."""
+    result = jira_request("GET", "field")
+    custom_fields = {}
+    for field in result:
+        if field["id"].startswith("customfield_"):
+            custom_fields[field["name"]] = field["id"]
+    return custom_fields
 
 
 def get_existing_tickets() -> dict[str, str]:
@@ -274,14 +293,10 @@ def _inline_marks(text: str) -> list[dict]:
 
 def build_issue_payload(ticket: dict) -> dict:
     """Build the Jira issue creation payload from a parsed ticket."""
-    # Combine description + technical + acceptance criteria into one ADF body
-    full_markdown = ticket["description"]
-    if ticket["technical"]:
-        full_markdown += f"\n\n## Technical Implementation\n\n{ticket['technical']}"
-    if ticket["acceptance_criteria"]:
-        full_markdown += f"\n\n## Acceptance Criteria\n\n{ticket['acceptance_criteria']}"
-
-    description_adf = markdown_to_adf(full_markdown)
+    # Map sections to separate Jira fields
+    description_adf = markdown_to_adf(ticket["description"]) if ticket["description"] else {"version": 1, "type": "doc", "content": []}
+    technical_adf = markdown_to_adf(ticket["technical"]) if ticket["technical"] else {"version": 1, "type": "doc", "content": []}
+    acceptance_adf = markdown_to_adf(ticket["acceptance_criteria"]) if ticket["acceptance_criteria"] else {"version": 1, "type": "doc", "content": []}
 
     payload = {
         "fields": {
@@ -289,9 +304,20 @@ def build_issue_payload(ticket: dict) -> dict:
             "summary": ticket["title"],
             "description": description_adf,
             "issuetype": {"name": "Story"},
-            "labels": ["auto-synced", f"epic-{ticket['epic_name'].lower().replace(' ', '-')}"],
+            "labels": ["auto-synced", f"epic-{ticket['epic_name'].lower().replace(' ', '-').replace('&', 'and')}"],
         }
     }
+
+    # Add custom fields if they exist (customize field IDs based on your Jira instance)
+    # You can find field IDs by calling: GET /rest/api/3/field
+    # Common custom field naming: customfield_XXXXX
+    # Uncomment and adjust these based on your Jira setup:
+    
+    # if technical_adf["content"]:  # Only add if not empty
+    #     payload["fields"]["customfield_10000"] = technical_adf  # Replace with your Technical Implementation field ID
+    
+    # if acceptance_adf["content"]:  # Only add if not empty
+    #     payload["fields"]["customfield_10001"] = acceptance_adf  # Replace with your Acceptance Criteria field ID
 
     return payload
 
@@ -317,9 +343,22 @@ def main():
     print(f"Dry run: {DRY_RUN}")
     print()
 
-    # Get existing tickets to avoid duplicates (skip in dry run without creds)
+    # Get custom fields and existing tickets (skip in dry run without creds)
+    custom_fields = {}
     existing = {}
     if not DRY_RUN and JIRA_BASE_URL:
+        print("Discovering custom fields...")
+        try:
+            custom_fields = get_custom_fields()
+            if custom_fields:
+                print(f"  Found custom fields:")
+                for name, field_id in custom_fields.items():
+                    print(f"    - {name}: {field_id}")
+            print()
+        except Exception as e:
+            print(f"  WARNING: Could not fetch custom fields: {e}", file=sys.stderr)
+            print()
+
         print("Fetching existing Jira tickets...")
         existing = get_existing_tickets()
         print(f"  Found {len(existing)} existing ticket(s)")
@@ -347,6 +386,7 @@ def main():
             payload = build_issue_payload(ticket)
             print(f"  DRY RUN: Would create issue with {len(json.dumps(payload))} bytes")
             print(f"  Labels: {payload['fields']['labels']}")
+            print(f"  Fields: {list(payload['fields'].keys())}")
             created += 1
             print()
             continue

@@ -2,7 +2,7 @@
 
 ## Epic Summary
 
-Build the authenticated layout shell (sidebar, header), reusable data table component with sorting/filtering/pagination, and reusable form components that all feature pages will consume.
+Build the authenticated layout shell (sidebar, header, flash messages) and reusable frontend components (data table with pagination/sorting/filtering, form field library) that all feature pages depend on.
 
 ## Tickets
 

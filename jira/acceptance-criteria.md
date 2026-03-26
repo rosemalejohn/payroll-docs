@@ -1,41 +1,47 @@
-What Actions:
-Name the app/{Domain Folder}/Actions or app/{Domain Folder}/Services classes created.
-Briefly describe the single responsibility or business logic executed.
-What Models:
-List the new or updated app/{Domain Folder}/Models classes.
-Specify added relationships (hasMany, etc.) and fillable properties.
-What Migrations:
-Name the new tables or columns added in database/migrations.
-Note any required indexing, unique constraints, or foreign keys.
-Validation & DTOs:
-List the Form Requests (app/Http/Requests or app/{Domain Folder}/Requests) enforcing validation rules.
-List the classes created in app/{Domain Folder}/DTOs to strictly type the validated incoming data.
-Routes & Controllers:
-Define the HTTP verb and endpoint path (e.g., POST /api/resource).
-Specify the target Controller method and attached middleware (e.g., auth:sanctum).
-API Resources (If applicable):
-Name the API Resource classes created to format the outgoing JSON response (app/Http/Resources or app/{Domain Folder}/Resources).
-Policies & Authorization:
-Name the classes created in app/{Domain Folder}/Policies enforcing business rules or model authorization.
-Define the specific user roles or conditions required to pass.
-Queries:
-Name the classes handling complex database retrieval or external API fetching (app/{Domain Folder}/Queries).
-Events & Listeners:
-List the internal Domain Events triggered by the Actions (app/{Domain Folder}/Events).
-List the Event Listeners reacting to those events (app/{Domain Folder}/Listeners).
-Jobs:
-List the background Jobs reacting to Domain Events or handling heavy processing (app/{Domain Folder}/Jobs).
-Specify the queue connections/names.
-Mail & Notifications:
-Name the Mailables or Notification classes handling external communication 
-Commands:
-Name the new Artisan commands created in app/Console/Commands.
-List the command signature and its scheduled frequency if applicable.
-Tests:
-List the Feature or Unit tests created
-Specify the exact scenarios being covered (e.g., "asserts 422 on invalid email").
-Environment & Config:
-List any new variables that need to be added to .env and .env.example.
-Edge Cases & Notes:
-List any potential points of failure, race conditions, or required background jobs.
-Note specific payload conditions, third-party API limits, or tricky scenarios the reviewer should test.
+# Acceptance Criteria Template
+
+> Fill only the fields applicable to the task. If not relevant, leave out of the criteria.
+
+**Example task:** Integrate Cloudflare Turnstile into the registration form of SelfieCash.
+
+---
+
+## Client-side
+
+### Layout
+
+**Q: Is there a layout design provided?**
+- \<link to the Figma design\>
+
+### Positioning
+
+**Q: Where is the relevant interactable element positioned?**
+- The Turnstile widget should appear at the end of the form
+
+### Screen-size Friendliness
+
+**Q: Is the element supposed to adapt according to the screen size?**
+- Mobile-first
+
+### Behavior
+
+**Q: How is the element expected to behave when in different screen sizes?**
+- The widget should stretch and fill the available horizontal space
+- The widget's theme should adapt according to the site theme of either dark or light
+
+### Validation
+
+**Q: Should an error occur, what is expected to be seen and where?**
+- There should be a human-readable error text message in the lower left-side
+- Error message should be formatted similarly to other error messages on the form
+
+---
+
+## Server-side
+
+### Side-effects
+
+**Q: List down all known effects to data.**
+- Upon registration, the Turnstile token should be required and evaluated if valid or not by Cloudflare's API
+- If invalid, a custom human-readable error message must be thrown
+- If valid, the registration process proceeds to the next step

@@ -2,7 +2,7 @@
 
 ## Epic Summary
 
-Build currency settings page, CRUD actions for currencies and rates, deactivation with safety checks, currency conversion display in payroll runs, and edge case handling for mid-run rate updates and missing rates.
+Build the currency management feature end-to-end: currencies and currency snapshot database setup, settings page for viewing/managing currencies, CRUD actions for currencies and rates, deactivation with safety checks, currency conversion display in payroll runs, and edge case handling for mid-run rate updates and missing rates.
 
 ## Tickets
 

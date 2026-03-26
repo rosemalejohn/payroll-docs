@@ -2,7 +2,7 @@
 
 ## Epic Summary
 
-Build the main dashboard page with payroll overview: recent/active payroll runs, key metrics (total payroll cost, employee count, pending runs), and quick action shortcuts.
+Build the main dashboard page with payroll overview: recent/active payroll runs, key metrics (total payroll cost, employee count, pending runs), and quick action shortcuts. Content is role-specific for Owner, Payroll Officer, Finance, and Employee users.
 
 ## Tickets
 

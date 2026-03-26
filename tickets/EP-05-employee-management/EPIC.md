@@ -2,7 +2,7 @@
 
 ## Epic Summary
 
-Build the employee CRUD pages (list, create/edit, compensation management, external salary flags, deactivation) and the daily HRIS sync job that mirrors employee data from the external HRIS application.
+Build the employee management feature end-to-end: employees and employee compensation database setup, CRUD pages (list, create/edit, compensation, payroll flags, deactivation), and the daily HRIS sync job that mirrors employee data from the external HRIS application.
 
 ## Tickets
 

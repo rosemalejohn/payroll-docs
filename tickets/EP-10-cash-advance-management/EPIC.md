@@ -2,7 +2,7 @@
 
 ## Epic Summary
 
-Build cash advance CRUD for recording and tracking employee cash advances, and implement automatic recovery/deduction from payslips upon payroll run finalization.
+Build cash advance management end-to-end: cash advances database setup, CRUD for recording and tracking employee cash advances, and automatic recovery/deduction from payslips upon payroll run finalization.
 
 ## Tickets
 

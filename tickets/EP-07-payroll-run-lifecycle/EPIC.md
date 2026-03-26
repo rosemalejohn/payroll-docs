@@ -2,7 +2,7 @@
 
 ## Epic Summary
 
-Manage the full payroll run lifecycle: period CRUD, run creation, list/detail pages, state transitions (draft -> submitted -> under_review -> finalized), employee assignment, absent days entry, submission for review, return to draft, and duplicate run prevention.
+Manage the full payroll run lifecycle: payroll periods database setup and CRUD, payroll run creation with auto-population of employees and currency snapshots, payroll runs and payslips database setup, list/detail pages, state transitions (draft -> submitted -> under_review -> finalized), employee assignment, absent days entry, submission for review, return to draft, and duplicate run prevention.
 
 ## Tickets
 
@@ -16,8 +16,5 @@ Manage the full payroll run lifecycle: period CRUD, run creation, list/detail pa
 | PAY-042 | Add/Remove Employees from Draft Payroll Run |
 | PAY-043 | Absent Days Entry Per Employee Per Run |
 | PAY-057 | Submit Payroll Run for Review |
-| PAY-058 | Submit Payroll Run for Review (Duplicate) |
 | PAY-059 | Return Payroll Run to Draft |
 | PAY-076 | Duplicate Payroll Run Prevention |
-
-> **Note:** PAY-057 and PAY-058 appear to be duplicates. Review and consolidate before importing to Jira.

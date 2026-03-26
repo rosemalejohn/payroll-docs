@@ -8,7 +8,24 @@
       "Bash(DRY_RUN=true python scripts/sync_tickets_to_jira.py)",
       "Bash(for f:*)",
       "Bash(do sed:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(cd:*)",
+      "Bash(npx skills:*)",
+      "Bash(gws --help)",
+      "Bash(npm install:*)",
+      "Bash(brew install:*)",
+      "Bash(gws --version)",
+      "Bash(java -version)",
+      "Bash(pip3 list:*)",
+      "Bash(pip3 install:*)",
+      "Read(//Users/rosemalejohn/**)",
+      "Bash(echo \"GOOGLE_APPLICATION_CREDENTIALS=$GOOGLE_APPLICATION_CREDENTIALS\")",
+      "Bash(gws schema:*)",
+      "Bash(for dir:*)",
+      "Bash(do 'epic=$\\(basename $dir\\)')",
+      "Read(//Users/rosemalejohn/Desktop/payhris-payroll/$dir/**)",
+      "Bash(pbcopy)",
+      "Bash(cat:*)"
     ]
   }
 }

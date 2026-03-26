@@ -8,6 +8,6 @@ Build the authenticated layout shell (sidebar, header, flash messages) and reusa
 
 | Ticket | Title |
 |--------|-------|
-| PAY-022 | Build Authenticated Layout with Sidebar Navigation |
-| PAY-023 | Build Reusable Data Table Component |
-| PAY-024 | Build Reusable Form Components |
+| PAY-022 | Authenticated Layout |
+| PAY-023 | Data Table Component |
+| PAY-024 | Form Components |

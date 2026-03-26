@@ -8,9 +8,7 @@ Build the employee management feature end-to-end: employees and employee compens
 
 | Ticket | Title |
 |--------|-------|
-| PAY-026 | Employee List Page with Filters and Pagination |
-| PAY-027 | Employee Create/Edit Page |
-| PAY-028 | Employee Compensation Management |
-| PAY-029 | Employee External Salary and Payroll Flags |
-| PAY-030 | Employee Deactivation with Confirmation |
-| PAY-031 | HRIS Employee Sync Job |
+| PAY-026 | Employee Management |
+| PAY-028 | Employee Compensation |
+| PAY-029 | Employee Payroll Settings |
+| PAY-031 | HRIS Employee Synchronization |
